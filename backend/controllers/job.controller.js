@@ -52,3 +52,35 @@ const getAllJobs = async (req, res) => {
         return res.status(500).json({ message: error.message })
     }
 }
+const getJobsById = async (req, res) =>{
+  try {
+    const job = await Job.findById(req.params.id); // Find user by MongoDB ID
+    if (!job) {
+        return res.status(404).json({message:"Job not found"})
+    }
+    await Job.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } })
+    res.status(200).json(job);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+const getJobsByCategory = async (req, res) => {
+    try {
+        const { category } = req.params
+
+        const jobs = await Job.find({
+            category: category,
+            isOpen: true           // only show open jobs
+        })
+        .populate("postedBy", "name email")
+        .populate("company", "name logo")
+        .sort({ createdAt: -1 })
+
+        // ✅ return empty array if no jobs in that category
+        // not a 404 — the category exists, just no jobs yet
+        return res.status(200).json({ jobs })
+
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+}
