@@ -54,7 +54,7 @@ const getAllJobs = async (req, res) => {
 }
 const getJobsById = async (req, res) =>{
   try {
-    const job = await Job.findById(req.params.id); // Find user by MongoDB ID
+    const job = await Job.findById(req.params.id); // Find job by MongoDB ID
     if (!job) {
         return res.status(404).json({message:"Job not found"})
     }
@@ -84,3 +84,5 @@ const getJobsByCategory = async (req, res) => {
         res.status(500).json({ error: err.message })
     }
 }
+
+module.exports = {getAllJobs, getJobsByCategory, getJobsById};
