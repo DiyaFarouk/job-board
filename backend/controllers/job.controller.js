@@ -29,7 +29,7 @@
 // Admin last      → getAllJobsAdmin, deleteJobAdmin
 
 const Job = require("../models/job.model.js")
-
+// PUBLIC FUNCTIONS — no login needed
 const getAllJobs = async (req, res) => {
     try {
         const { category, location, search, type, experienceLevel } = req.query
@@ -84,3 +84,28 @@ const getJobsByCategory = async (req, res) => {
         res.status(500).json({ error: err.message })
     }
 }
+const searchJobs = async (req,res) => {
+    try {
+        const { keyword } = req.query
+        const jobs = await Job.find({
+            isOpen: true,
+            $or: [
+                { title: { $regex: keyword, $options: "i" } },
+                { description: { $regex: keyword, $options: "i" } }
+            ]
+        })
+        .populate("postedBy", "name email")
+        .populate("company", "name logo")
+        .sort({ createdAt: -1 })
+
+        return res.status(200).json({ jobs })
+
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+}
+
+// COMPANY FUNCTIONS - login + company role
+
+
+module.exports = {getAllJobs,getJobsByCategory,getJobsById,searchJobs}
