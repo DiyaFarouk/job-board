@@ -29,6 +29,7 @@
 // Admin last      → getAllJobsAdmin, deleteJobAdmin
 
 const Job = require("../models/job.model.js")
+const User = require("../models/user.model.js")
 // PUBLIC FUNCTIONS — no login needed
 const getAllJobs = async (req, res) => {
     try {
