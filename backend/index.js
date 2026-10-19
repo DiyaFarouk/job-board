@@ -12,9 +12,11 @@ connectdb()
 
 const authRoutes = require("./routes/auth.route.js")
 const companyRoutes = require("./routes/company.route.js")
+const jobRoutes =  require("./routes/job.routes.js")
 
 app.use(authRoutes)
 app.use(companyRoutes)
+app.use(jobRoutes)
 app.listen(port,() => {
     console.log(`Server is running on ${port}`)
 })

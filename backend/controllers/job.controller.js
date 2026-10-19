@@ -106,7 +106,119 @@ const searchJobs = async (req,res) => {
     }
 }
 
+
 // COMPANY FUNCTIONS - login + company role
+const createJob = async (req,res) => {
+    try {
+        const { title, description, requirements, responsibilities, location, type, category, experienceLevel, skills, salary} = req.body
 
+        const newJob = new Job({
+            title,
+            description,
+            requirements,
+            responsibilities,
+            postedBy: req.user.id, // from auth middleware,
+            location,
+            type,
+            category,
+            experienceLevel,
+            skills,
+            salary,
+            company :req.user.companyId
+        })
+        await newJob.save()
+            res.status(201).json({ message: "Job created successfully", job: newJob})
+        
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+}
+const updateJob = async (req,res) => {
+    try {
+        const job = await Job.findById(req.params.id)
+        if (!job) {
+            return res.status(404).json({ message: "Job not found" })
+        }
+        const updatedJob = await Job.findByIdAndUpdate(req.params.id, req.body, { new: true })
+        res.status(200).json({ message: "Job updated successfully", job: updatedJob })
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+}
+const deleteJob = async (req,res) => {
+    try {
+        const job = await Job.findById(req.params.id)
+        if (!job) {
+            return res.status(404).json({message: "Job not found"})
+        }
+        await Job.findByIdAndDelete(req.params.id)
+        res.status(200).json({ message: "Job deleted successfully"})
+    } catch (err) {
+        res.status(500).json({ error: err.message})
+    }
+}
 
-module.exports = {getAllJobs,getJobsByCategory,getJobsById,searchJobs}
+// closeJob — set isOpen to false without deleting
+const closeJob = async (req,res) => {
+    try {
+        const job = await Job.findById(req.params.id)
+        if (!job) {
+            return res.status(404).json({ message: "Job not found"})
+        }
+        if (job.postedBy.toString() !== req.user.id) {
+            return res.status(403).json({ message: "You are not authorized to close this job"})
+        }
+        job.isOpen = false
+        await job.save()
+        res.status(200).json({ message: "Job closed successfully", job })
+
+    } catch (err) {
+        res.status(500).json({ error: err.message})
+    }
+}
+// reopenJob — set isOpen back to true
+const reopenJob = async (req,res) => {
+    try {
+        const job = await Job.findById(req.params.id)
+        if (!job) {
+            return res.status(404).json({ message: "Job not found"})
+        }
+        if (job.postedBy.toString() !== req.user.id) {
+            return res.status(403).json({ message: "You are not authorized to reopen this job"})
+        }
+        job.isOpen = true
+        await job.save()
+        res.status(200).json({ message: "Job reopened successfully", job })
+
+    } catch (err) {
+        res.status(500).json({ error: err.message})
+    }
+}
+// getMyJobs — get all jobs posted by the logged in company
+const getMyJobs = async (req,res) => {
+    try {
+        const jobs = await Job.find({ postedBy: req.user.id})
+        .populate("company", "name logo location")
+        res.status(200).json({ jobs })
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+}
+
+// getJobApplicants — get all candidates who applied to a specific job
+const getJobApplicants = async (req,res) => {
+    try {
+        const job = await Job.findById(req.params.id).populate("applicants", "name email resume")
+        if (!job) {
+            return res.status(404).json({ message: "Job not found"})
+        }
+        if (job.postedBy.toString() !== req.user.id) {
+            return res.status(403).json({ message: "You are not authorized to view applicants for this job"})
+        }
+        res.status(200).json({ applicants: job.applicants })
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+}
+
+module.exports = {getAllJobs,getJobsByCategory,getJobsById,searchJobs,closeJob,reopenJob,getMyJobs,getJobApplicants,createJob,updateJob,deleteJob}
