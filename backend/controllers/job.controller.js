@@ -221,4 +221,52 @@ const getJobApplicants = async (req,res) => {
     }
 }
 
-module.exports = {getAllJobs,getJobsByCategory,getJobsById,searchJobs,closeJob,reopenJob,getMyJobs,getJobApplicants,createJob,updateJob,deleteJob}
+// CANDIDATE FUNCTIONS - Login + candidate role
+// applyToJob — apply to a job with optional cover letter
+const applyToJob = async (req,res) => {
+    try {
+        const job = await Job.findById(req.params.id)
+        if (!job) {
+            return res.status(404).json({ message: "Job not found"})
+        }
+        if (!job.isOpen) {
+            return res.status(400).json({ message: "Job is closed"})
+        }
+        if (job.applicants.includes(req.user.id)) {
+            return res.status(400).json({ message: "You have already applied to this job"})
+        }
+        job.applicants.push(req.user.id)
+        await job.save()
+        res.status(200).json({ message: "Application submitted successfully", job })
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+}
+// getMyApplications — get all jobs the logged in candidate applied to
+const getMyApplications = async (req,res) => {
+    try {
+        const jobs = await Job.find({ applicants: req.user.id})
+        .populate("company", "name logo location")
+        res.status(200).json({ jobs })
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+}
+// withdrawApplication — cancel an application
+const withdrawApplication = async (req,res) => {
+    try {
+        const job = await Job.findById(req.params.id)
+        if (!job) {
+            return res.status(404).json({ message: "Job not found"})
+        }
+        if (!job.applicants.includes(req.user.id)) {
+            return res.status(400).json({ message: "You have not applied to this job"})
+        }
+        job.applicants = job.applicants.filter(applicant => applicant.toString() !== req.user.id)
+        await job.save()
+        res.status(200).json({ message: "Application withdrawn successfully", job })
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+}
+module.exports = {getAllJobs,getJobsByCategory,getJobsById,searchJobs,closeJob,reopenJob,getMyJobs,getJobApplicants,createJob,updateJob,deleteJob,applyToJob,getMyApplications,withdrawApplication}
