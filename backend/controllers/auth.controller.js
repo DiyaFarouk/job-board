@@ -83,7 +83,7 @@ const signIn = async (req,res) => {
            
         
     } catch (error) {
-        return res.status(500).json({message:"Error Signing in",error:err.message})
+        return res.status(500).json({message:"Error Signing in",error:error.message})
     }
 }
 

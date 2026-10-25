@@ -14,9 +14,9 @@ const authRoutes = require("./routes/auth.route.js")
 const companyRoutes = require("./routes/company.route.js")
 const jobRoutes =  require("./routes/job.routes.js")
 
-app.use(authRoutes)
-app.use(companyRoutes)
-app.use(jobRoutes)
+app.use("/api/auth",authRoutes)
+app.use("/api/companies",companyRoutes)
+app.use("/api/jobs",jobRoutes)
 app.listen(port,() => {
     console.log(`Server is running on ${port}`)
 })

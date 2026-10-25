@@ -2,7 +2,7 @@ const express = require("express")
 const router = express.Router()
 const {getAllCompanies,getCompanyById,getCompanyJobs,createCompany,updateCompany,deleteCompany,getMyCompany,verifyCompany,getUnverifiedCompanies} = require("../controllers/company.controller.js")
 const {protectRoute} = require("../middleware/auth.middleware.js")
-const {authorise,adminOnly,candidateOnly,companyOnly} = require("../middleware/role.middleware.js")
+const {authorise,adminOnly,companyOnly} = require("../middleware/role.middleware.js")
 
 // public
 router.get("/", getAllCompanies)
